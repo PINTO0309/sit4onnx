@@ -1,2 +1,132 @@
-# [WIP] sit4onnx
-Tools for simple inference testing using TensorRT, CUDA and OpenVINO CPU/GPU and CPU providers. **S**imple **I**nference **T**est for **ONNX**. 
+# sit4onnx
+Tools for simple inference testing using TensorRT, CUDA and OpenVINO CPU/GPU and CPU providers. **S**imple **I**nference **T**est for **ONNX**.
+
+https://github.com/PINTO0309/simple-onnx-processing-tools
+
+[![Downloads](https://static.pepy.tech/personalized-badge/sit4onnx?period=total&units=none&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/sit4onnx) ![GitHub](https://img.shields.io/github/license/PINTO0309/sit4onnx?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/sit4onnx?color=2BAF2B)](https://pypi.org/project/sit4onnx/) [![CodeQL](https://github.com/PINTO0309/sit4onnx/workflows/CodeQL/badge.svg)](https://github.com/PINTO0309/sit4onnx/actions?query=workflow%3ACodeQL)
+
+## 1. Setup
+### 1-1. HostPC
+```bash
+### option
+$ echo export PATH="~/.local/bin:$PATH" >> ~/.bashrc \
+&& source ~/.bashrc
+
+### run
+$ pip install -U onnx \
+&& pip install -U sit4onnx
+```
+### 1-2. Docker
+https://github.com/PINTO0309/simple-onnx-processing-tools#docker
+
+## 2. CLI Usage
+```bash
+$ sit4onnx -h
+
+usage:
+  sit4onnx [-h]
+  --input_onnx_file_path INPUT_ONNX_FILE_PATH
+  [--batch_size BATCH_SIZE]
+  [--test_loop_count TEST_LOOP_COUNT]
+  [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
+
+optional arguments:
+  -h, --help
+    show this help message and exit.
+
+  --input_onnx_file_path INPUT_ONNX_FILE_PATH
+    Input onnx file path.
+
+  --batch_size BATCH_SIZE
+    Value to be substituted if input batch size is undefined.
+    This is ignored if the input dimensions are all of static size.
+
+  --test_loop_count TEST_LOOP_COUNT
+    Number of times to run the test.
+    The total execution time is divided by the number of times the test is executed,
+    and the average inference time per inference is displayed.
+
+  --onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}
+    ONNX Execution Provider.
+```
+
+## 3. In-script Usage
+```python
+>>> from sit4onnx import inference
+>>> help(inference)
+
+Help on function inference in module sit4onnx.onnx_inference_test:
+
+inference(
+    input_onnx_file_path: str,
+    batch_size: Union[int, NoneType] = 1,
+    test_loop_count: Union[int, NoneType] = 10,
+    onnx_execution_provider: Union[str, NoneType] = 'tensorrt'
+)
+    Parameters
+    ----------
+    input_onnx_file_path: str
+        Input onnx file path.
+
+    batch_size: Optional[int]
+        Value to be substituted if input batch size is undefined.
+        This is ignored if the input dimensions are all of static size.
+        Default: 1
+
+    test_loop_count: Optional[int]
+        Number of times to run the test.
+        The total execution time is divided by the number of times the test is executed,
+        and the average inference time per inference is displayed.
+        Default: 10
+
+    onnx_execution_provider: Optional[str]
+        ONNX Execution Provider.
+        "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"
+        Default: "tensorrt"
+```
+
+## 4. CLI Execution
+```bash
+$ sit4onnx \
+--input_onnx_file_path osnet_x0_25_msmt17_Nx3x256x128.onnx \
+--batch_size 10 \
+--test_loop_count 10 \
+--onnx_execution_provider tensorrt
+```
+
+## 5. In-script Execution
+```python
+from sit4onnx import inference
+
+inference(
+  input_onnx_file_path="osnet_x0_25_msmt17_Nx3x256x128.onnx",
+  batch_size=10,
+  test_loop_count=10,
+  onnx_execution_provider="tensorrt",
+)
+```
+
+## 6. Sample
+```bash
+$ docker run --gpus all -it --rm \
+-v `pwd`:/home/user/workdir \
+ghcr.io/pinto0309/openvino2tensorflow:latest
+
+$ sit4onnx \
+--input_onnx_file_path osnet_x0_25_msmt17_Nx3x256x128.onnx \
+--batch_size 10 \
+--test_loop_count 10 \
+--onnx_execution_provider tensorrt
+```
+![image](https://user-images.githubusercontent.com/33194443/168086414-0a228097-9ffa-4088-887e-c3b7ab9fd796.png)
+![image](https://user-images.githubusercontent.com/33194443/168085932-c18f64ba-b72e-4d0d-a35d-5351a7e25bdb.png)
+
+## 7. Reference
+1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
+2. https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/index.html
+3. https://github.com/NVIDIA/TensorRT/tree/main/tools/onnx-graphsurgeon
+4. https://github.com/PINTO0309/simple-onnx-processing-tools
+5. https://github.com/PINTO0309/PINTO_model_zoo
+
+## 8. Issues
+https://github.com/PINTO0309/simple-onnx-processing-tools/issues
