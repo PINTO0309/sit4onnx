@@ -145,6 +145,7 @@ $ docker run --gpus all -it --rm \
 -v `pwd`:/home/user/workdir \
 ghcr.io/pinto0309/openvino2tensorflow:latest
 
+$ sudo pip install -U sit4onnx
 $ sit4onnx \
 --input_onnx_file_path osnet_x0_25_msmt17_Nx3x256x128.onnx \
 --batch_size 10 \
