@@ -8,11 +8,11 @@ https://github.com/PINTO0309/simple-onnx-processing-tools
 ## ToDo
 - [ ] Add an interface to allow arbitrary test data to be specified as input parameters.
   1. numpy.ndarray
-  2. numpy file 
+  2. numpy file
 - [ ] Allow static fixed shapes to be specified when dimensions other than batch size are undefined.
-- [ ] Returns numpy.ndarray of the last inference result as a return value when called from a Python script.
-- [ ] Add `--output_numpy_file` option. Output the final inference results to a numpy file.
-- [ ] Add `--non_verbose` option.
+- [x] Returns numpy.ndarray of the last inference result as a return value when called from a Python script.
+- [x] Add `--output_numpy_file` option. Output the final inference results to a numpy file.
+- [x] Add `--non_verbose` option.
 
 ## 1. Setup
 ### 1-1. HostPC
@@ -38,6 +38,8 @@ usage:
   [--batch_size BATCH_SIZE]
   [--test_loop_count TEST_LOOP_COUNT]
   [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
+  [--output_numpy_file]
+  [--non_verbose]
 
 optional arguments:
   -h, --help
@@ -57,6 +59,12 @@ optional arguments:
 
   --onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}
     ONNX Execution Provider.
+
+  --output_numpy_file
+    Outputs the last inference result to an .npy file.
+
+  --non_verbose
+    Do not show all information logs. Only error logs are displayed.
 ```
 
 ## 3. In-script Usage
@@ -67,11 +75,14 @@ optional arguments:
 Help on function inference in module sit4onnx.onnx_inference_test:
 
 inference(
-    input_onnx_file_path: str,
-    batch_size: Union[int, NoneType] = 1,
-    test_loop_count: Union[int, NoneType] = 10,
-    onnx_execution_provider: Union[str, NoneType] = 'tensorrt'
-)
+  input_onnx_file_path: str,
+  batch_size: Union[int, NoneType] = 1,
+  test_loop_count: Union[int, NoneType] = 10,
+  onnx_execution_provider: Union[str, NoneType] = 'tensorrt',
+  output_numpy_file: Union[bool, NoneType] = False,
+  non_verbose: Union[bool, NoneType] = False
+) -> List[numpy.ndarray]
+
     Parameters
     ----------
     input_onnx_file_path: str
@@ -92,6 +103,19 @@ inference(
         ONNX Execution Provider.
         "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"
         Default: "tensorrt"
+
+    output_numpy_file: Optional[bool]
+        Outputs the last inference result to an .npy file.
+        Default: False
+
+    non_verbose: Optional[bool]
+        Do not show all information logs. Only error logs are displayed.
+        Default: False
+
+    Returns
+    -------
+    final_results: List[np.ndarray]
+        Last Reasoning Results.
 ```
 
 ## 4. CLI Execution
