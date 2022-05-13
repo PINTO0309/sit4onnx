@@ -6,7 +6,7 @@ import time
 import onnx
 import onnxruntime
 import numpy as np
-from typing import Optional
+from typing import Optional, List
 from argparse import ArgumentParser
 
 class Color:
@@ -81,7 +81,9 @@ def inference(
     batch_size: Optional[int] = 1,
     test_loop_count: Optional[int] = 10,
     onnx_execution_provider: Optional[str] = 'tensorrt',
-):
+    output_numpy_file: Optional[bool] = False,
+    non_verbose: Optional[bool] = False,
+) -> List[np.ndarray]:
     """inference
 
     Parameters
@@ -104,6 +106,19 @@ def inference(
         ONNX Execution Provider.\n\
         "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"\n\
         Default: "tensorrt"
+
+    output_numpy_file: Optional[bool]
+        Outputs the last inference result to an .npy file.\n\
+        Default: False
+
+    non_verbose: Optional[bool]
+        Do not show all information logs. Only error logs are displayed.\n\
+        Default: False
+
+    Returns
+    -------
+    final_results: List[np.ndarray]
+        Last Reasoning Results.
     """
 
     if not batch_size:
@@ -201,17 +216,18 @@ def inference(
     }
 
     # Print info
-    print(\
-        f'{Color.GREEN}INFO:{Color.RESET} '+ \
-        f'{Color.BLUE}providers:{Color.RESET} {onnx_session.get_providers()}'
-    )
-    for idx, ort_input_name, ort_input_shape, onnx_input_type in zip(range(1, len(ort_input_names)+1), ort_input_names, ort_input_shapes, onnx_input_types):
+    if not non_verbose:
         print(\
             f'{Color.GREEN}INFO:{Color.RESET} '+ \
-            f'{Color.BLUE}input_name.{idx}:{Color.RESET} {ort_input_name}, '+ \
-            f'{Color.BLUE}shape:{Color.RESET} {ort_input_shape}, '+ \
-            f'{Color.BLUE}dtype:{Color.RESET} {onnx_input_type.__name__}'
+            f'{Color.BLUE}providers:{Color.RESET} {onnx_session.get_providers()}'
         )
+        for idx, ort_input_name, ort_input_shape, onnx_input_type in zip(range(1, len(ort_input_names)+1), ort_input_names, ort_input_shapes, onnx_input_types):
+            print(\
+                f'{Color.GREEN}INFO:{Color.RESET} '+ \
+                f'{Color.BLUE}input_name.{idx}:{Color.RESET} {ort_input_name}, '+ \
+                f'{Color.BLUE}shape:{Color.RESET} {ort_input_shape}, '+ \
+                f'{Color.BLUE}dtype:{Color.RESET} {onnx_input_type.__name__}'
+            )
 
     # Add one additional test for warm-up
     test_loop_count += 1
@@ -229,23 +245,35 @@ def inference(
         if n > 0:
             e += (time.time() - s)
 
+    # Output numpy file
+    if output_numpy_file and results:
+        for ort_output_name, result in zip(ort_output_names, results):
+            np.save(
+                f'result_{ort_output_name.replace("/","_").replace(";","_").replace(":","_")}.npy',
+                result
+            )
+
     # Print results
-    print(\
-        f'{Color.GREEN}INFO:{Color.RESET} '+ \
-        f'{Color.BLUE}test_loop_count:{Color.RESET} '+ \
-        f'{test_loop_count - 1}'
-    )
-    print(\
-        f'{Color.GREEN}INFO:{Color.RESET} '+ \
-        f'{Color.BLUE}avg elapsed time per pred: {Color.RESET} {e / (test_loop_count - 1) * 1000} ms'
-    )
-    for idx, ort_output_name, result in zip(range(1,len(ort_output_names)+1), ort_output_names, results):
+    if not non_verbose:
         print(\
             f'{Color.GREEN}INFO:{Color.RESET} '+ \
-            f'{Color.BLUE}output_name.{idx}:{Color.RESET} {ort_output_name}, '+ \
-            f'{Color.BLUE}shape:{Color.RESET} {[dim for dim in result.shape]}, '+ \
-            f'{Color.BLUE}dtype:{Color.RESET} {result.dtype}'
+            f'{Color.BLUE}test_loop_count:{Color.RESET} '+ \
+            f'{test_loop_count - 1}'
         )
+        print(\
+            f'{Color.GREEN}INFO:{Color.RESET} '+ \
+            f'{Color.BLUE}avg elapsed time per pred: {Color.RESET} {e / (test_loop_count - 1) * 1000} ms'
+        )
+        for idx, ort_output_name, result in zip(range(1,len(ort_output_names)+1), ort_output_names, results):
+            print(\
+                f'{Color.GREEN}INFO:{Color.RESET} '+ \
+                f'{Color.BLUE}output_name.{idx}:{Color.RESET} {ort_output_name}, '+ \
+                f'{Color.BLUE}shape:{Color.RESET} {[dim for dim in result.shape]}, '+ \
+                f'{Color.BLUE}dtype:{Color.RESET} {result.dtype}'
+            )
+
+    # Return
+    return results
 
 
 def main():
@@ -280,12 +308,24 @@ def main():
         default='tensorrt',
         help='ONNX Execution Provider.'
     )
+    parser.add_argument(
+        '--output_numpy_file',
+        action='store_true',
+        help='Outputs the last inference result to an .npy file.'
+    )
+    parser.add_argument(
+        '--non_verbose',
+        action='store_true',
+        help='Do not show all information logs. Only error logs are displayed.'
+    )
     args = parser.parse_args()
 
     input_onnx_file_path = args.input_onnx_file_path
     batch_size = args.batch_size
     test_loop_count = args.test_loop_count
     onnx_execution_provider = args.onnx_execution_provider
+    output_numpy_file = args.output_numpy_file
+    non_verbose = args.non_verbose
 
     # file existence check
     if not os.path.exists(input_onnx_file_path) or \
@@ -298,11 +338,13 @@ def main():
         )
         sys.exit(1)
 
-    inference(
+    final_results = inference(
         input_onnx_file_path=input_onnx_file_path,
         batch_size=batch_size,
         test_loop_count=test_loop_count,
         onnx_execution_provider=onnx_execution_provider,
+        output_numpy_file=output_numpy_file,
+        non_verbose=non_verbose,
     )
 
 if __name__ == '__main__':
