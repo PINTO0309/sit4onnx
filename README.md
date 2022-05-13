@@ -7,8 +7,11 @@ https://github.com/PINTO0309/simple-onnx-processing-tools
 
 ## ToDo
 - [ ] Add an interface to allow arbitrary test data to be specified as input parameters.
+  1. numpy.ndarray
+  2. numpy file 
 - [ ] Allow static fixed shapes to be specified when dimensions other than batch size are undefined.
 - [ ] Returns numpy.ndarray of the last inference result as a return value when called from a Python script.
+- [ ] Add `--output_numpy_file` option. Output the final inference results to a numpy file.
 - [ ] Add `--non_verbose` option.
 
 ## 1. Setup
