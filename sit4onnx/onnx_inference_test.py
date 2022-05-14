@@ -228,8 +228,8 @@ def inference(
         for idx, ort_input_name, ort_input_shape, onnx_input_type in zip(range(1, len(ort_input_names)+1), ort_input_names, ort_input_shapes, onnx_input_types):
             print(\
                 f'{Color.GREEN}INFO:{Color.RESET} '+ \
-                f'{Color.BLUE}input_name.{idx}:{Color.RESET} {ort_input_name}, '+ \
-                f'{Color.BLUE}shape:{Color.RESET} {ort_input_shape}, '+ \
+                f'{Color.BLUE}input_name.{idx}:{Color.RESET} {ort_input_name} '+ \
+                f'{Color.BLUE}shape:{Color.RESET} {ort_input_shape} '+ \
                 f'{Color.BLUE}dtype:{Color.RESET} {onnx_input_type.__name__}'
             )
 
@@ -266,13 +266,17 @@ def inference(
         )
         print(\
             f'{Color.GREEN}INFO:{Color.RESET} '+ \
+            f'{Color.BLUE}total elapsed time: {Color.RESET} {e * 1000} ms'
+        )
+        print(\
+            f'{Color.GREEN}INFO:{Color.RESET} '+ \
             f'{Color.BLUE}avg elapsed time per pred: {Color.RESET} {e / (test_loop_count - 1) * 1000} ms'
         )
         for idx, ort_output_name, result in zip(range(1,len(ort_output_names)+1), ort_output_names, results):
             print(\
                 f'{Color.GREEN}INFO:{Color.RESET} '+ \
-                f'{Color.BLUE}output_name.{idx}:{Color.RESET} {ort_output_name}, '+ \
-                f'{Color.BLUE}shape:{Color.RESET} {[dim for dim in result.shape]}, '+ \
+                f'{Color.BLUE}output_name.{idx}:{Color.RESET} {ort_output_name} '+ \
+                f'{Color.BLUE}shape:{Color.RESET} {[dim for dim in result.shape]} '+ \
                 f'{Color.BLUE}dtype:{Color.RESET} {result.dtype}'
             )
 
