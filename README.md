@@ -63,7 +63,8 @@ optional arguments:
 
   --input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING
       Use an external file of numpy.ndarray saved using np.save as input data for testing.
-      This parameter can be specified multiple times depending on the number of input OPs in the model.
+      This parameter can be specified multiple times depending on the number of input OPs
+      in the model.
       e.g.
       --input_numpy_file_paths_for_testing aaa.npy
       --input_numpy_file_paths_for_testing bbb.npy
