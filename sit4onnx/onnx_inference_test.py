@@ -260,6 +260,15 @@ def inference(
             ) for ort_input_name, ort_input_shape, onnx_input_type in zip(ort_input_names, ort_input_shapes, onnx_input_types)
         }
     else:
+        # Check if the number of input OPs in the model matches the number of inputs in the test data
+        if len(ort_input_names) != len(numpy_ndarrays_for_testing):
+            print(
+                f'{Color.RED}ERROR:{Color.RESET} '+
+                f'The number of input OPs in the model must match the number of test data inputs.\n'+
+                f'Number of model input OPs: {len(ort_input_names)}\n'+
+                f'Number of test data inputs: {len(numpy_ndarrays_for_testing)}'
+            )
+            sys.exit(1)
         input_dict = {
             ort_input_name: numpy_ndarray_for_testing \
                 for ort_input_name, numpy_ndarray_for_testing in zip(ort_input_names, numpy_ndarrays_for_testing)
