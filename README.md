@@ -6,7 +6,7 @@ https://github.com/PINTO0309/simple-onnx-processing-tools
 [![Downloads](https://static.pepy.tech/personalized-badge/sit4onnx?period=total&units=none&left_color=grey&right_color=brightgreen&left_text=Downloads)](https://pepy.tech/project/sit4onnx) ![GitHub](https://img.shields.io/github/license/PINTO0309/sit4onnx?color=2BAF2B) [![PyPI](https://img.shields.io/pypi/v/sit4onnx?color=2BAF2B)](https://pypi.org/project/sit4onnx/) [![CodeQL](https://github.com/PINTO0309/sit4onnx/workflows/CodeQL/badge.svg)](https://github.com/PINTO0309/sit4onnx/actions?query=workflow%3ACodeQL)
 
 ## ToDo
-- [ ] Add an interface to allow arbitrary test data to be specified as input parameters.
+- [x] Add an interface to allow arbitrary test data to be specified as input parameters.
   1. numpy.ndarray
   2. numpy file
 - [ ] Allow static fixed shapes to be specified when dimensions other than batch size are undefined.
@@ -38,33 +38,42 @@ usage:
   [--batch_size BATCH_SIZE]
   [--test_loop_count TEST_LOOP_COUNT]
   [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
+  [--input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
   [--output_numpy_file]
   [--non_verbose]
 
 optional arguments:
   -h, --help
-    show this help message and exit.
+      show this help message and exit.
 
   --input_onnx_file_path INPUT_ONNX_FILE_PATH
-    Input onnx file path.
+      Input onnx file path.
 
   --batch_size BATCH_SIZE
-    Value to be substituted if input batch size is undefined.
-    This is ignored if the input dimensions are all of static size.
+      Value to be substituted if input batch size is undefined.
+      This is ignored if the input dimensions are all of static size.
 
   --test_loop_count TEST_LOOP_COUNT
-    Number of times to run the test.
-    The total execution time is divided by the number of times the test is executed,
-    and the average inference time per inference is displayed.
+      Number of times to run the test.
+      The total execution time is divided by the number of times the test is executed,
+      and the average inference time per inference is displayed.
 
   --onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}
-    ONNX Execution Provider.
+      ONNX Execution Provider.
+
+  --input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING
+      Use an external file of numpy.ndarray saved using np.save as input data for testing.
+      This parameter can be specified multiple times depending on the number of input OPs in the model.
+      e.g.
+      --input_numpy_file_paths_for_testing aaa.npy
+      --input_numpy_file_paths_for_testing bbb.npy
+      --input_numpy_file_paths_for_testing ccc.npy
 
   --output_numpy_file
-    Outputs the last inference result to an .npy file.
+      Outputs the last inference result to an .npy file.
 
   --non_verbose
-    Do not show all information logs. Only error logs are displayed.
+      Do not show all information logs. Only error logs are displayed.
 ```
 
 ## 3. In-script Usage
@@ -79,6 +88,8 @@ inference(
   batch_size: Union[int, NoneType] = 1,
   test_loop_count: Union[int, NoneType] = 10,
   onnx_execution_provider: Union[str, NoneType] = 'tensorrt',
+  input_numpy_file_paths_for_testing: Union[List[str], NoneType] = None,
+  numpy_ndarrays_for_testing: Union[List[numpy.ndarray], NoneType] = None,
   output_numpy_file: Union[bool, NoneType] = False,
   non_verbose: Union[bool, NoneType] = False
 ) -> List[numpy.ndarray]
@@ -103,6 +114,26 @@ inference(
         ONNX Execution Provider.
         "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"
         Default: "tensorrt"
+
+    input_numpy_file_paths_for_testing: Optional[List[str]]
+        Use an external file of numpy.ndarray saved using np.save as input data for testing.
+        If this parameter is specified, the value specified for batch_size is ignored.
+        numpy_ndarray_for_testing Cannot be specified at the same time.
+        For models with multiple input OPs, specify multiple numpy file paths in list format.
+        e.g. ['aaa.npy', 'bbb.npy', 'ccc.npy']
+        Default: None
+
+    numpy_ndarrays_for_testing: Optional[List[np.ndarray]]
+        Specify the numpy.ndarray to be used for inference testing.
+        If this parameter is specified, the value specified for batch_size is ignored.
+        input_numpy_file_path_for_testing Cannot be specified at the same time.
+        For models with multiple input OPs, specify multiple numpy.ndarrays in list format.
+        e.g.
+          [
+            np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32),
+            np.asarray([1], dtype=np.int64),
+          ]
+        Default: None
 
     output_numpy_file: Optional[bool]
         Outputs the last inference result to an .npy file.

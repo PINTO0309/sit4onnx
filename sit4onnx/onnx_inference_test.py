@@ -81,6 +81,8 @@ def inference(
     batch_size: Optional[int] = 1,
     test_loop_count: Optional[int] = 10,
     onnx_execution_provider: Optional[str] = 'tensorrt',
+    input_numpy_file_paths_for_testing: Optional[List[str]] = None,
+    numpy_ndarrays_for_testing: Optional[List[np.ndarray]] = None,
     output_numpy_file: Optional[bool] = False,
     non_verbose: Optional[bool] = False,
 ) -> List[np.ndarray]:
@@ -106,6 +108,22 @@ def inference(
         ONNX Execution Provider.\n\
         "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"\n\
         Default: "tensorrt"
+
+    input_numpy_file_paths_for_testing: Optional[List[str]]
+        Use an external file of numpy.ndarray saved using np.save as input data for testing.\n\
+        If this parameter is specified, the value specified for batch_size is ignored.\n\
+        numpy_ndarray_for_testing Cannot be specified at the same time.\n\
+        For models with multiple input OPs, specify multiple numpy file paths in list format.\n\
+        e.g. ['aaa.npy', 'bbb.npy', 'ccc.npy']\n\
+        Default: None
+
+    numpy_ndarrays_for_testing: Optional[List[np.ndarray]]
+        Specify the numpy.ndarray to be used for inference testing.\n\
+        If this parameter is specified, the value specified for batch_size is ignored.\n\
+        input_numpy_file_path_for_testing Cannot be specified at the same time.\n\
+        For models with multiple input OPs, specify multiple numpy.ndarrays in list format.\n\
+        e.g. [np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32), np.asarray([1], dtype=np.int64)]\n\
+        Default: None
 
     output_numpy_file: Optional[bool]
         Outputs the last inference result to an .npy file.\n\
@@ -145,6 +163,31 @@ def inference(
             f'test_loop_count must be 1 or greater.'
         )
         sys.exit(1)
+
+    # Test Data Check
+    if input_numpy_file_paths_for_testing and numpy_ndarrays_for_testing:
+        print(
+            f'{Color.RED}ERROR:{Color.RESET} '+
+            f'Only one of input_numpy_file_path_for_testing and numpy_ndarray_for_testing can be specified.'
+        )
+        sys.exit(1)
+
+    # file existence check
+    if input_numpy_file_paths_for_testing:
+        for input_numpy_file_path_for_testing in input_numpy_file_paths_for_testing:
+            if not os.path.exists(input_numpy_file_path_for_testing) or \
+                not os.path.isfile(input_numpy_file_path_for_testing):
+                    print(
+                        f'{Color.RED}ERROR:{Color.RESET} '+
+                        f'The specified input_numpy_file_path_for_testing does not exist. File: {input_numpy_file_path_for_testing}'
+                    )
+                    sys.exit(1)
+
+    # Test data load
+    if input_numpy_file_path_for_testing:
+        numpy_ndarrays_for_testing = []
+        for input_numpy_file_path_for_testing in input_numpy_file_paths_for_testing:
+            numpy_ndarrays_for_testing.append(np.load(input_numpy_file_path_for_testing))
 
     # trt_engine_cache_path
     trt_engine_cache_path = os.path.dirname(input_onnx_file_path)
@@ -208,12 +251,19 @@ def inference(
         ONNX_DTYPES_TO_NUMPY_DTYPES[f'{onnx_input.type.tensor_type.elem_type}'] for onnx_input in onnx_inputs
     ]
 
-    input_dict = {
-        ort_input_name: np.ones(
-            ort_input_shape, # type: ignore
-            onnx_input_type,
-        ) for ort_input_name, ort_input_shape, onnx_input_type in zip(ort_input_names, ort_input_shapes, onnx_input_types)
-    }
+    input_dict = None
+    if not numpy_ndarrays_for_testing:
+        input_dict = {
+            ort_input_name: np.ones(
+                ort_input_shape,
+                onnx_input_type,
+            ) for ort_input_name, ort_input_shape, onnx_input_type in zip(ort_input_names, ort_input_shapes, onnx_input_types)
+        }
+    else:
+        input_dict = {
+            ort_input_name: numpy_ndarray_for_testing \
+                for ort_input_name, numpy_ndarray_for_testing in zip(ort_input_names, numpy_ndarrays_for_testing)
+        }
 
     # Print info
     if not non_verbose:
@@ -317,6 +367,18 @@ def main():
         help='ONNX Execution Provider.'
     )
     parser.add_argument(
+        '--input_numpy_file_paths_for_testing',
+        type=str,
+        action='append',
+        help=\
+            'Use an external file of numpy.ndarray saved using np.save as input data for testing. \n'+
+            'This parameter can be specified multiple times depending on the number of input OPs in the model. \n'+
+            'e.g. \n'+
+            '--input_numpy_file_paths_for_testing aaa.npy \n'+
+            '--input_numpy_file_paths_for_testing bbb.npy \n'+
+            '--input_numpy_file_paths_for_testing ccc.npy'
+    )
+    parser.add_argument(
         '--output_numpy_file',
         action='store_true',
         help='Outputs the last inference result to an .npy file.'
@@ -332,6 +394,7 @@ def main():
     batch_size = args.batch_size
     test_loop_count = args.test_loop_count
     onnx_execution_provider = args.onnx_execution_provider
+    input_numpy_file_paths_for_testing = args.input_numpy_file_paths_for_testing
     output_numpy_file = args.output_numpy_file
     non_verbose = args.non_verbose
 
@@ -340,6 +403,8 @@ def main():
         batch_size=batch_size,
         test_loop_count=test_loop_count,
         onnx_execution_provider=onnx_execution_provider,
+        input_numpy_file_paths_for_testing=input_numpy_file_paths_for_testing,
+        numpy_ndarrays_for_testing=None,
         output_numpy_file=output_numpy_file,
         non_verbose=non_verbose,
     )
