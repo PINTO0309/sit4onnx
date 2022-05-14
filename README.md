@@ -52,6 +52,8 @@ optional arguments:
   --batch_size BATCH_SIZE
       Value to be substituted if input batch size is undefined.
       This is ignored if the input dimensions are all of static size.
+      Also ignored if input_numpy_file_paths_for_testing or
+      numpy_ndarrays_for_testing is specified.
 
   --test_loop_count TEST_LOOP_COUNT
       Number of times to run the test.
@@ -103,6 +105,8 @@ inference(
     batch_size: Optional[int]
         Value to be substituted if input batch size is undefined.
         This is ignored if the input dimensions are all of static size.
+        Also ignored if input_numpy_file_paths_for_testing or
+        numpy_ndarrays_for_testing is specified.
         Default: 1
 
     test_loop_count: Optional[int]

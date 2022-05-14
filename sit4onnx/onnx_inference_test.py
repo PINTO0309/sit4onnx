@@ -96,6 +96,8 @@ def inference(
     batch_size: Optional[int]
         Value to be substituted if input batch size is undefined.\n\
         This is ignored if the input dimensions are all of static size.\n\
+        Also ignored if input_numpy_file_paths_for_testing or\n\
+        numpy_ndarrays_for_testing is specified.\n\
         Default: 1
 
     test_loop_count: Optional[int]
