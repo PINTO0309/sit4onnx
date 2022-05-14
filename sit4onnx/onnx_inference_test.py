@@ -36,10 +36,10 @@ class Color:
 
 
 ONNX_DTYPES_TO_NUMPY_DTYPES: dict = {
-    onnx.TensorProto.FLOAT: np.float32,
-    onnx.TensorProto.DOUBLE: np.float64,
-    onnx.TensorProto.INT32: np.int32,
-    onnx.TensorProto.INT64: np.int64,
+    f'{onnx.TensorProto.FLOAT}': np.float32,
+    f'{onnx.TensorProto.DOUBLE}': np.float64,
+    f'{onnx.TensorProto.INT32}': np.int32,
+    f'{onnx.TensorProto.INT64}': np.int64,
 }
 
 ONNX_EXECUTION_PROVIDERS: dict = {
@@ -205,7 +205,7 @@ def inference(
         ort_input_shapes.append(input_shape)
 
     onnx_input_types = [
-        ONNX_DTYPES_TO_NUMPY_DTYPES[onnx_input.type.tensor_type.elem_type] for onnx_input in onnx_inputs
+        ONNX_DTYPES_TO_NUMPY_DTYPES[f'{onnx_input.type.tensor_type.elem_type}'] for onnx_input in onnx_inputs
     ]
 
     input_dict = {
@@ -217,6 +217,10 @@ def inference(
 
     # Print info
     if not non_verbose:
+        print(\
+            f'{Color.GREEN}INFO:{Color.RESET} '+ \
+            f'{Color.BLUE}file:{Color.RESET} {input_onnx_file_path}'
+        )
         print(\
             f'{Color.GREEN}INFO:{Color.RESET} '+ \
             f'{Color.BLUE}providers:{Color.RESET} {onnx_session.get_providers()}'
@@ -326,17 +330,6 @@ def main():
     onnx_execution_provider = args.onnx_execution_provider
     output_numpy_file = args.output_numpy_file
     non_verbose = args.non_verbose
-
-    # file existence check
-    if not os.path.exists(input_onnx_file_path) or \
-        not os.path.isfile(input_onnx_file_path) or \
-        not os.path.splitext(input_onnx_file_path)[-1] == '.onnx':
-
-        print(
-            f'{Color.RED}ERROR:{Color.RESET} '+
-            f'The specified file (.onnx) does not exist. or not an onnx file. File: {input_onnx_file_path}'
-        )
-        sys.exit(1)
 
     final_results = inference(
         input_onnx_file_path=input_onnx_file_path,
