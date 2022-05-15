@@ -235,6 +235,21 @@ $ sit4onnx \
 ![image](https://user-images.githubusercontent.com/33194443/168458796-f5d5e71d-6136-435c-a59a-98c089b38071.png)
 ![2](https://user-images.githubusercontent.com/33194443/168458889-2afa6d20-7132-4e53-9b22-1696bb2347b5.gif)
 
+```bash
+https://github.com/daquexian/onnx-simplifier/issues/178
+
+$ docker run --gpus all -it --rm \
+-v `pwd`:/home/user/workdir \
+ghcr.io/pinto0309/openvino2tensorflow:latest
+
+$ sudo pip install -U simple-onnx-processing-tools
+$ sit4onnx \
+--input_onnx_file_path hitnet_xl_sf_finalpass_from_tf_720x1280_cast.onnx \
+--onnx_execution_provider tensorrt
+```
+![image](https://user-images.githubusercontent.com/33194443/168459313-53f4de79-f7ce-4f09-b455-6496105c2d37.png)
+![3](https://user-images.githubusercontent.com/33194443/168459950-eeed8042-fa38-414e-bc21-c102200b6c2a.gif)
+
 ## 7. Reference
 1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
 2. https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/index.html
