@@ -60,8 +60,7 @@ optional arguments:
       Input OPs with undefined shapes are changed to the specified shape.
       This parameter can be specified multiple times depending on
       the number of input OPs in the model.
-      Also ignored if input_numpy_file_paths_for_testing or numpy_ndarrays_for_testing
-      is specified.
+      Also ignored if input_numpy_file_paths_for_testing is specified.
       e.g.
       --fixed_shapes 1 3 224 224
       --fixed_shapes 1 5
