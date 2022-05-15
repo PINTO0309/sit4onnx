@@ -9,7 +9,7 @@ https://github.com/PINTO0309/simple-onnx-processing-tools
 - [x] Add an interface to allow arbitrary test data to be specified as input parameters.
   1. numpy.ndarray
   2. numpy file
-- [ ] Allow static fixed shapes to be specified when dimensions other than batch size are undefined.
+- [x] Allow static fixed shapes to be specified when dimensions other than batch size are undefined.
 - [x] Returns numpy.ndarray of the last inference result as a return value when called from a Python script.
 - [x] Add `--output_numpy_file` option. Output the final inference results to a numpy file.
 - [x] Add `--non_verbose` option.
@@ -36,6 +36,7 @@ usage:
   sit4onnx [-h]
   --input_onnx_file_path INPUT_ONNX_FILE_PATH
   [--batch_size BATCH_SIZE]
+  [--fixed_shapes FIXED_SHAPES [FIXED_SHAPES ...]]
   [--test_loop_count TEST_LOOP_COUNT]
   [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
   [--input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
@@ -52,8 +53,19 @@ optional arguments:
   --batch_size BATCH_SIZE
       Value to be substituted if input batch size is undefined.
       This is ignored if the input dimensions are all of static size.
-      Also ignored if input_numpy_file_paths_for_testing or
-      numpy_ndarrays_for_testing is specified.
+      Also ignored if input_numpy_file_paths_for_testing
+      or numpy_ndarrays_for_testing or fixed_shapes is specified.
+
+  --fixed_shapes FIXED_SHAPES [FIXED_SHAPES ...]
+      Input OPs with undefined shapes are changed to the specified shape.
+      This parameter can be specified multiple times depending on
+      the number of input OPs in the model.
+      Also ignored if input_numpy_file_paths_for_testing or numpy_ndarrays_for_testing
+      is specified.
+      e.g.
+      --fixed_shapes 1 3 224 224
+      --fixed_shapes 1 5
+      --fixed_shapes 1 1 224 224
 
   --test_loop_count TEST_LOOP_COUNT
       Number of times to run the test.
@@ -67,6 +79,8 @@ optional arguments:
       Use an external file of numpy.ndarray saved using np.save as input data for testing.
       This parameter can be specified multiple times depending on the number of input OPs
       in the model.
+      If this parameter is specified, the value specified for batch_size and fixed_shapes
+      are ignored.
       e.g.
       --input_numpy_file_paths_for_testing aaa.npy
       --input_numpy_file_paths_for_testing bbb.npy
@@ -89,6 +103,7 @@ Help on function inference in module sit4onnx.onnx_inference_test:
 inference(
   input_onnx_file_path: str,
   batch_size: Union[int, NoneType] = 1,
+  fixed_shapes: Union[List[int], NoneType] = None,
   test_loop_count: Union[int, NoneType] = 10,
   onnx_execution_provider: Union[str, NoneType] = 'tensorrt',
   input_numpy_file_paths_for_testing: Union[List[str], NoneType] = None,
@@ -109,6 +124,20 @@ inference(
         numpy_ndarrays_for_testing is specified.
         Default: 1
 
+    fixed_shapes: Optional[List[int]]
+        Input OPs with undefined shapes are changed to the specified shape.
+        This parameter can be specified multiple times depending on the number of input OPs
+        in the model.
+        Also ignored if input_numpy_file_paths_for_testing or numpy_ndarrays_for_testing
+        is specified.
+        e.g.
+            [
+                [1, 3, 224, 224],
+                [1, 5],
+                [1, 1, 224, 224],
+            ]
+        Default: None
+
     test_loop_count: Optional[int]
         Number of times to run the test.
         The total execution time is divided by the number of times the test is executed,
@@ -122,7 +151,8 @@ inference(
 
     input_numpy_file_paths_for_testing: Optional[List[str]]
         Use an external file of numpy.ndarray saved using np.save as input data for testing.
-        If this parameter is specified, the value specified for batch_size is ignored.
+        If this parameter is specified, the value specified for batch_size and fixed_shapes
+        are ignored.
         numpy_ndarray_for_testing Cannot be specified at the same time.
         For models with multiple input OPs, specify multiple numpy file paths in list format.
         e.g. ['aaa.npy', 'bbb.npy', 'ccc.npy']
@@ -130,14 +160,11 @@ inference(
 
     numpy_ndarrays_for_testing: Optional[List[np.ndarray]]
         Specify the numpy.ndarray to be used for inference testing.
-        If this parameter is specified, the value specified for batch_size is ignored.
-        input_numpy_file_path_for_testing Cannot be specified at the same time.
+        If this parameter is specified, the value specified for batch_size and fixed_shapes
+        are ignored.
+        input_numpy_file_paths_for_testing Cannot be specified at the same time.
         For models with multiple input OPs, specify multiple numpy.ndarrays in list format.
-        e.g.
-          [
-            np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32),
-            np.asarray([1], dtype=np.int64),
-          ]
+        e.g. [np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32), np.asarray([1], dtype=np.int64)]
         Default: None
 
     output_numpy_file: Optional[bool]

@@ -79,6 +79,7 @@ ONNX_EXECUTION_PROVIDERS: dict = {
 def inference(
     input_onnx_file_path: str,
     batch_size: Optional[int] = 1,
+    fixed_shapes: Optional[List[int]] = None,
     test_loop_count: Optional[int] = 10,
     onnx_execution_provider: Optional[str] = 'tensorrt',
     input_numpy_file_paths_for_testing: Optional[List[str]] = None,
@@ -100,6 +101,18 @@ def inference(
         numpy_ndarrays_for_testing is specified.\n\
         Default: 1
 
+    fixed_shapes: Optional[List[int]]
+        Input OPs with undefined shapes are changed to the specified shape.\n\
+        This parameter can be specified multiple times depending on the number of input OPs in the model.\n\
+        Also ignored if input_numpy_file_paths_for_testing or numpy_ndarrays_for_testing is specified.\n\
+        e.g.\n\
+            [\n\
+                [1, 3, 224, 224],\n\
+                [1, 5],\n\
+                [1, 1, 224, 224],\n\
+            ]\n\
+        Default: None
+
     test_loop_count: Optional[int]
         Number of times to run the test.\n\
         The total execution time is divided by the number of times the test is executed,\n\
@@ -113,7 +126,7 @@ def inference(
 
     input_numpy_file_paths_for_testing: Optional[List[str]]
         Use an external file of numpy.ndarray saved using np.save as input data for testing.\n\
-        If this parameter is specified, the value specified for batch_size is ignored.\n\
+        If this parameter is specified, the value specified for batch_size and fixed_shapes are ignored.\n\
         numpy_ndarray_for_testing Cannot be specified at the same time.\n\
         For models with multiple input OPs, specify multiple numpy file paths in list format.\n\
         e.g. ['aaa.npy', 'bbb.npy', 'ccc.npy']\n\
@@ -121,8 +134,8 @@ def inference(
 
     numpy_ndarrays_for_testing: Optional[List[np.ndarray]]
         Specify the numpy.ndarray to be used for inference testing.\n\
-        If this parameter is specified, the value specified for batch_size is ignored.\n\
-        input_numpy_file_path_for_testing Cannot be specified at the same time.\n\
+        If this parameter is specified, the value specified for batch_size and fixed_shapes are ignored.\n\
+        input_numpy_file_paths_for_testing Cannot be specified at the same time.\n\
         For models with multiple input OPs, specify multiple numpy.ndarrays in list format.\n\
         e.g. [np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32), np.asarray([1], dtype=np.int64)]\n\
         Default: None
@@ -186,7 +199,7 @@ def inference(
                     sys.exit(1)
 
     # Test data load
-    if input_numpy_file_path_for_testing:
+    if input_numpy_file_paths_for_testing:
         numpy_ndarrays_for_testing = []
         for input_numpy_file_path_for_testing in input_numpy_file_paths_for_testing:
             numpy_ndarrays_for_testing.append(np.load(input_numpy_file_path_for_testing))
@@ -233,35 +246,59 @@ def inference(
     ]
 
     ort_input_shapes = []
-    for ort_input in ort_inputs:
-        input_shape = []
-        for shape_idx, shape in enumerate(ort_input.shape):
-            if shape_idx == 0 and (isinstance(shape, str) or shape <= 0):
-                # Batch size check
-                if batch_size <= 0:
-                    print(
-                        f'{Color.RED}ERROR:{Color.RESET} '+
-                        f'batch_size must be 1 or greater.'
-                    )
-                    sys.exit(1)
-                input_shape.append(batch_size)
-            else:
-                input_shape.append(shape)
-        ort_input_shapes.append(input_shape)
+
+    if fixed_shapes:
+        # Check if the number of input OPs in the model matches the number of inputs in the test data
+        if len(ort_inputs) != len(fixed_shapes):
+            print(
+                f'{Color.RED}ERROR:{Color.RESET} '+
+                f'The number of input OPs in the model must match the number of test data inputs.\n'+
+                f'Number of model input OPs: {len(ort_input_names)}\n'+
+                f'Number of test data inputs: {len(fixed_shapes)}'
+            )
+            sys.exit(1)
+        for fixed_shape in fixed_shapes:
+            ort_input_shapes.append(fixed_shape)
+
+    else:
+        for ort_input in ort_inputs:
+            input_shape = []
+            for shape_idx, shape in enumerate(ort_input.shape):
+                if shape_idx == 0 and (isinstance(shape, str) or shape <= 0):
+                    # Batch size check
+                    if batch_size <= 0:
+                        print(
+                            f'{Color.RED}ERROR:{Color.RESET} '+
+                            f'batch_size must be 1 or greater.'
+                        )
+                        sys.exit(1)
+                    input_shape.append(batch_size)
+                else:
+                    input_shape.append(shape)
+            ort_input_shapes.append(input_shape)
 
     onnx_input_types = [
         ONNX_DTYPES_TO_NUMPY_DTYPES[f'{onnx_input.type.tensor_type.elem_type}'] for onnx_input in onnx_inputs
     ]
 
     input_dict = None
-    if not numpy_ndarrays_for_testing:
+    if not numpy_ndarrays_for_testing and not fixed_shapes:
         input_dict = {
             ort_input_name: np.ones(
                 ort_input_shape,
                 onnx_input_type,
             ) for ort_input_name, ort_input_shape, onnx_input_type in zip(ort_input_names, ort_input_shapes, onnx_input_types)
         }
-    else:
+
+    elif not numpy_ndarrays_for_testing and fixed_shapes:
+        input_dict = {
+            ort_input_name: np.ones(
+                fixed_shape,
+                onnx_input_type,
+            ) for ort_input_name, fixed_shape, onnx_input_type in zip(ort_input_names, fixed_shapes, onnx_input_types)
+        }
+
+    elif numpy_ndarrays_for_testing:
         # Check if the number of input OPs in the model matches the number of inputs in the test data
         if len(ort_input_names) != len(numpy_ndarrays_for_testing):
             print(
@@ -358,16 +395,32 @@ def main():
         type=int,
         default=1,
         help=\
-            'Value to be substituted if input batch size is undefined. '+
-            'This is ignored if the input dimensions are all of static size.'
+            'Value to be substituted if input batch size is undefined. \n'+
+            'This is ignored if the input dimensions are all of static size. \n'+
+            'Also ignored if input_numpy_file_paths_for_testing or \n'+
+            'numpy_ndarrays_for_testing or fixed_shapes is specified.'
+    )
+    parser.add_argument(
+        '--fixed_shapes',
+        type=int,
+        nargs='+',
+        action='append',
+        help=\
+            'Input OPs with undefined shapes are changed to the specified shape. \n'+
+            'This parameter can be specified multiple times depending on the number of input OPs in the model. \n'+
+            'Also ignored if input_numpy_file_paths_for_testing or numpy_ndarrays_for_testing is specified. \n'+
+            'e.g. \n'+
+            '--fixed_shapes 1 3 224 224 \n'+
+            '--fixed_shapes 1 5 \n'+
+            '--fixed_shapes 1 1 224 224'
     )
     parser.add_argument(
         '--test_loop_count',
         type=int,
         default=10,
         help=\
-            'Number of times to run the test. '+
-            'The total execution time is divided by the number of times the test is executed, '+
+            'Number of times to run the test. \n'+
+            'The total execution time is divided by the number of times the test is executed, \n'+
             'and the average inference time per inference is displayed.'
     )
     parser.add_argument(
@@ -384,6 +437,7 @@ def main():
         help=\
             'Use an external file of numpy.ndarray saved using np.save as input data for testing. \n'+
             'This parameter can be specified multiple times depending on the number of input OPs in the model. \n'+
+            'If this parameter is specified, the value specified for batch_size and fixed_shapes are ignored. \n'+
             'e.g. \n'+
             '--input_numpy_file_paths_for_testing aaa.npy \n'+
             '--input_numpy_file_paths_for_testing bbb.npy \n'+
@@ -403,6 +457,7 @@ def main():
 
     input_onnx_file_path = args.input_onnx_file_path
     batch_size = args.batch_size
+    fixed_shapes=args.fixed_shapes
     test_loop_count = args.test_loop_count
     onnx_execution_provider = args.onnx_execution_provider
     input_numpy_file_paths_for_testing = args.input_numpy_file_paths_for_testing
@@ -412,6 +467,7 @@ def main():
     final_results = inference(
         input_onnx_file_path=input_onnx_file_path,
         batch_size=batch_size,
+        fixed_shapes=fixed_shapes,
         test_loop_count=test_loop_count,
         onnx_execution_provider=onnx_execution_provider,
         input_numpy_file_paths_for_testing=input_numpy_file_paths_for_testing,
