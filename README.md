@@ -211,7 +211,7 @@ $ docker run --gpus all -it --rm \
 -v `pwd`:/home/user/workdir \
 ghcr.io/pinto0309/openvino2tensorflow:latest
 
-$ sudo pip install -U sit4onnx
+$ sudo pip install -U simple-onnx-processing-tools
 $ sit4onnx \
 --input_onnx_file_path osnet_x0_25_msmt17_Nx3x256x128.onnx \
 --batch_size 10 \
@@ -220,6 +220,20 @@ $ sit4onnx \
 ```
 ![image](https://user-images.githubusercontent.com/33194443/168086414-0a228097-9ffa-4088-887e-c3b7ab9fd796.png)
 ![1](https://user-images.githubusercontent.com/33194443/168458657-53df36fd-ad23-498f-a2ce-bcfcc38691be.gif)
+
+```bash
+$ docker run --gpus all -it --rm \
+-v `pwd`:/home/user/workdir \
+ghcr.io/pinto0309/openvino2tensorflow:latest
+
+$ sudo pip install -U simple-onnx-processing-tools
+$ sit4onnx \
+--input_onnx_file_path sci_NxHxW.onnx \
+--fixed_shapes 100 3 224 224 \
+--onnx_execution_provider tensorrt
+```
+![image](https://user-images.githubusercontent.com/33194443/168458796-f5d5e71d-6136-435c-a59a-98c089b38071.png)
+![2](https://user-images.githubusercontent.com/33194443/168458889-2afa6d20-7132-4e53-9b22-1696bb2347b5.gif)
 
 ## 7. Reference
 1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
