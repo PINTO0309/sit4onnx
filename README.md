@@ -165,7 +165,10 @@ inference(
         input_numpy_file_paths_for_testing Cannot be specified at the same time.
         For models with multiple input OPs, specify multiple numpy.ndarrays in list format.
         e.g.
-        [np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32), np.asarray([1], dtype=np.int64)]
+        [
+            np.asarray([[[1.0],[2.0],[3.0]]], dtype=np.float32),
+            np.asarray([1], dtype=np.int64),
+        ]
         Default: None
 
     output_numpy_file: Optional[bool]
