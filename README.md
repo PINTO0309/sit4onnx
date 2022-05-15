@@ -219,7 +219,7 @@ $ sit4onnx \
 --onnx_execution_provider tensorrt
 ```
 ![image](https://user-images.githubusercontent.com/33194443/168086414-0a228097-9ffa-4088-887e-c3b7ab9fd796.png)
-![image](https://user-images.githubusercontent.com/33194443/168085932-c18f64ba-b72e-4d0d-a35d-5351a7e25bdb.png)
+![1](https://user-images.githubusercontent.com/33194443/168458657-53df36fd-ad23-498f-a2ce-bcfcc38691be.gif)
 
 ## 7. Reference
 1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
