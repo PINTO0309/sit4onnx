@@ -36,7 +36,7 @@ usage:
   sit4onnx [-h]
   --input_onnx_file_path INPUT_ONNX_FILE_PATH
   [--batch_size BATCH_SIZE]
-  [--fixed_shapes FIXED_SHAPES [FIXED_SHAPES ...]]
+  [--fixed_shapes DIM0 [DIM1 DIM2 ...]]
   [--test_loop_count TEST_LOOP_COUNT]
   [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
   [--input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
@@ -56,7 +56,7 @@ optional arguments:
       Also ignored if input_numpy_file_paths_for_testing
       or numpy_ndarrays_for_testing or fixed_shapes is specified.
 
-  --fixed_shapes FIXED_SHAPES [FIXED_SHAPES ...]
+  --fixed_shapes DIM0 [DIM1 DIM2 ...]
       Input OPs with undefined shapes are changed to the specified shape.
       This parameter can be specified multiple times depending on
       the number of input OPs in the model.
