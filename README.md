@@ -39,29 +39,29 @@ $ sit4onnx -h
 
 usage:
   sit4onnx [-h]
-  --input_onnx_file_path INPUT_ONNX_FILE_PATH
-  [--batch_size BATCH_SIZE]
-  [--fixed_shapes DIM0 [DIM1 DIM2 ...]]
-  [--test_loop_count TEST_LOOP_COUNT]
-  [--onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
-  [--input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
-  [--output_numpy_file]
-  [--non_verbose]
+  -if INPUT_ONNX_FILE_PATH
+  [-b BATCH_SIZE]
+  [-fs DIM0 [DIM1 DIM2 ...]]
+  [-tlc TEST_LOOP_COUNT]
+  [-oep {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
+  [-ifp INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
+  [-ofp]
+  [-n]
 
 optional arguments:
   -h, --help
       show this help message and exit.
 
-  --input_onnx_file_path INPUT_ONNX_FILE_PATH
+  -if, --input_onnx_file_path INPUT_ONNX_FILE_PATH
       Input onnx file path.
 
-  --batch_size BATCH_SIZE
+  -b, --batch_size BATCH_SIZE
       Value to be substituted if input batch size is undefined.
       This is ignored if the input dimensions are all of static size.
       Also ignored if input_numpy_file_paths_for_testing
       or numpy_ndarrays_for_testing or fixed_shapes is specified.
 
-  --fixed_shapes DIM0 [DIM1 DIM2 ...]
+  -fs, --fixed_shapes DIM0 [DIM1 DIM2 ...]
       Input OPs with undefined shapes are changed to the specified shape.
       This parameter can be specified multiple times depending on
       the number of input OPs in the model.
@@ -71,15 +71,15 @@ optional arguments:
       --fixed_shapes 1 5
       --fixed_shapes 1 1 224 224
 
-  --test_loop_count TEST_LOOP_COUNT
+  -tlc, --test_loop_count TEST_LOOP_COUNT
       Number of times to run the test.
       The total execution time is divided by the number of times the test is executed,
       and the average inference time per inference is displayed.
 
-  --onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}
+  -oep, --onnx_execution_provider {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}
       ONNX Execution Provider.
 
-  --input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING
+  -ifp, --input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING
       Use an external file of numpy.ndarray saved using np.save as input data for testing.
       This parameter can be specified multiple times depending on the number of input OPs
       in the model.
@@ -90,10 +90,10 @@ optional arguments:
       --input_numpy_file_paths_for_testing bbb.npy
       --input_numpy_file_paths_for_testing ccc.npy
 
-  --output_numpy_file
+  -ofp, --output_numpy_file
       Outputs the last inference result to an .npy file.
 
-  --non_verbose
+  -n, --non_verbose
       Do not show all information logs. Only error logs are displayed.
 ```
 
