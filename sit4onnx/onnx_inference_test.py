@@ -82,6 +82,7 @@ def inference(
     fixed_shapes: Optional[List[int]] = None,
     test_loop_count: Optional[int] = 10,
     onnx_execution_provider: Optional[str] = 'tensorrt',
+    intra_op_num_threads: Optional[int] = 0,
     input_numpy_file_paths_for_testing: Optional[List[str]] = None,
     numpy_ndarrays_for_testing: Optional[List[np.ndarray]] = None,
     output_numpy_file: Optional[bool] = False,
@@ -123,6 +124,10 @@ def inference(
         ONNX Execution Provider.\n\
         "tensorrt" or "cuda" or "openvino_cpu" or "openvino_gpu" or "cpu"\n\
         Default: "tensorrt"
+
+    intra_op_num_threads: Optional[int]
+        Sets the number of threads used to parallelize the execution within nodes.\n\
+        Default is 0 to let onnxruntime choose.
 
     input_numpy_file_paths_for_testing: Optional[List[str]]
         Use an external file of numpy.ndarray saved using np.save as input data for testing.\n\
@@ -219,6 +224,7 @@ def inference(
     # Session option
     session_option = onnxruntime.SessionOptions()
     session_option.log_severity_level = 4
+    session_option.intra_op_num_threads = intra_op_num_threads
     if sub_info:
         if onnx_execution_provider in ['openvino_cpu', 'openvino_gpu']:
             session_option.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
@@ -445,6 +451,13 @@ def main():
         help='ONNX Execution Provider.'
     )
     parser.add_argument(
+        '-iont',
+        '--intra_op_num_threads',
+        type=int,
+        default=0,
+        help='Sets the number of threads used to parallelize the execution within nodes.'
+    )
+    parser.add_argument(
         '-ifp',
         '--input_numpy_file_paths_for_testing',
         type=str,
@@ -477,6 +490,7 @@ def main():
     fixed_shapes=args.fixed_shapes
     test_loop_count = args.test_loop_count
     onnx_execution_provider = args.onnx_execution_provider
+    intra_op_num_threads = args.intra_op_num_threads
     input_numpy_file_paths_for_testing = args.input_numpy_file_paths_for_testing
     output_numpy_file = args.output_numpy_file
     non_verbose = args.non_verbose
@@ -487,6 +501,7 @@ def main():
         fixed_shapes=fixed_shapes,
         test_loop_count=test_loop_count,
         onnx_execution_provider=onnx_execution_provider,
+        intra_op_num_threads=intra_op_num_threads,
         input_numpy_file_paths_for_testing=input_numpy_file_paths_for_testing,
         numpy_ndarrays_for_testing=None,
         output_numpy_file=output_numpy_file,
