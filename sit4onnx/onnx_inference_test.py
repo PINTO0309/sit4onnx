@@ -36,8 +36,15 @@ class Color:
 
 
 ONNX_DTYPES_TO_NUMPY_DTYPES: dict = {
+    f'{onnx.TensorProto.FLOAT16}': np.float16,
     f'{onnx.TensorProto.FLOAT}': np.float32,
     f'{onnx.TensorProto.DOUBLE}': np.float64,
+    f'{onnx.TensorProto.UINT8}': np.uint8,
+    f'{onnx.TensorProto.UINT16}': np.uint16,
+    f'{onnx.TensorProto.UINT32}': np.uint32,
+    f'{onnx.TensorProto.UINT64}': np.uint64,
+    f'{onnx.TensorProto.INT8}': np.int8,
+    f'{onnx.TensorProto.INT16}': np.int16,
     f'{onnx.TensorProto.INT32}': np.int32,
     f'{onnx.TensorProto.INT64}': np.int64,
 }
@@ -225,6 +232,11 @@ def inference(
     session_option = onnxruntime.SessionOptions()
     session_option.log_severity_level = 4
     session_option.intra_op_num_threads = intra_op_num_threads
+
+
+    # session_option.execution_mode  = onnxruntime.ExecutionMode.ORT_PARALLEL
+    session_option.inter_op_num_threads = 19
+
     if sub_info:
         if onnx_execution_provider in ['openvino_cpu', 'openvino_gpu']:
             session_option.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
