@@ -233,10 +233,6 @@ def inference(
     session_option.log_severity_level = 4
     session_option.intra_op_num_threads = intra_op_num_threads
 
-
-    # session_option.execution_mode  = onnxruntime.ExecutionMode.ORT_PARALLEL
-    session_option.inter_op_num_threads = 19
-
     if sub_info:
         if onnx_execution_provider in ['openvino_cpu', 'openvino_gpu']:
             session_option.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
