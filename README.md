@@ -222,11 +222,7 @@ inference(
 
 ## 6. Sample
 ```bash
-$ docker run --gpus all -it --rm \
--v `pwd`:/home/user/workdir \
-ghcr.io/pinto0309/openvino2tensorflow:latest
-
-$ sudo pip install -U simple-onnx-processing-tools
+$ sudo pip install -U sit4onnx
 $ sit4onnx \
 --input_onnx_file_path osnet_x0_25_msmt17_Nx3x256x128.onnx \
 --batch_size 10 \
@@ -237,11 +233,7 @@ $ sit4onnx \
 ![1](https://user-images.githubusercontent.com/33194443/168458657-53df36fd-ad23-498f-a2ce-bcfcc38691be.gif)
 
 ```bash
-$ docker run --gpus all -it --rm \
--v `pwd`:/home/user/workdir \
-ghcr.io/pinto0309/openvino2tensorflow:latest
-
-$ sudo pip install -U simple-onnx-processing-tools
+$ sudo pip install -U sit4onnx
 $ sit4onnx \
 --input_onnx_file_path sci_NxHxW.onnx \
 --fixed_shapes 100 3 224 224 \
@@ -253,11 +245,7 @@ $ sit4onnx \
 ```bash
 https://github.com/daquexian/onnx-simplifier/issues/178
 
-$ docker run --gpus all -it --rm \
--v `pwd`:/home/user/workdir \
-ghcr.io/pinto0309/openvino2tensorflow:latest
-
-$ sudo pip install -U simple-onnx-processing-tools
+$ sudo pip install -U sit4onnx
 $ sit4onnx \
 --input_onnx_file_path hitnet_xl_sf_finalpass_from_tf_720x1280_cast.onnx \
 --onnx_execution_provider tensorrt
