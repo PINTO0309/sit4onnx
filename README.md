@@ -253,12 +253,130 @@ $ sit4onnx \
 ![image](https://user-images.githubusercontent.com/33194443/168459313-53f4de79-f7ce-4f09-b455-6496105c2d37.png)
 ![3](https://user-images.githubusercontent.com/33194443/168459950-eeed8042-fa38-414e-bc21-c102200b6c2a.gif)
 
-## 7. Reference
+## 7. TensorRT Installation Example
+```bash
+export OS=ubuntu2204
+export CUDAVER=11.8
+export CUDNNVER=8.9
+export TENSORRTVER=8.5.3
+export PYCUDAVER=2022.2
+export ONNXVER=1.14.0
+
+export CUDA_HOME=/usr/local/cuda
+export PATH=${PATH}:${CUDA_HOME}/bin
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${CUDA_HOME}/lib64
+
+# Install TensorRT
+# https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html
+sudo dpkg -i nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}_1.0-1_amd64.deb \
+&& sudo cp /var/nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}/*-keyring.gpg /usr/share/keyrings/ \
+&& sudo apt-get update \
+&& sudo apt-get install -y --no-install-recommends \
+    tensorrt=${TENSORRTVER}.1-1+cuda${CUDAVER} \
+    tensorrt-dev=${TENSORRTVER}.1-1+cuda${CUDAVER} \
+    tensorrt-libs=${TENSORRTVER}.1-1+cuda${CUDAVER} \
+    uff-converter-tf=${TENSORRTVER}-1+cuda${CUDAVER} \
+    python3-libnvinfer-dev=${TENSORRTVER}-1+cuda${CUDAVER} \
+    python3-libnvinfer=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvparsers-dev=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvparsers8=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvonnxparsers-dev=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvonnxparsers8=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer-samples=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer-plugin-dev=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer-plugin8=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer-dev=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer-bin=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libnvinfer8=${TENSORRTVER}-1+cuda${CUDAVER} \
+    graphsurgeon-tf=${TENSORRTVER}-1+cuda${CUDAVER} \
+    onnx-graphsurgeon=${TENSORRTVER}-1+cuda${CUDAVER} \
+    libprotobuf-dev \
+    protobuf-compiler \
+&& rm nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}_1.0-1_amd64.deb \
+&& cd /usr/src/tensorrt/samples/trtexec \
+&& sudo make \
+&& sudo apt clean \
+&& sudo rm -rf /var/lib/apt/lists/*
+
+# Install onnx-tensorrt
+git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt ../onnx-tensorrt \
+&& pushd ../onnx-tensorrt \
+&& mkdir build \
+&& pushd build \
+&& cmake .. -DTENSORRT_ROOT=/usr/src/tensorrt \
+&& make -j$(nproc) \
+&& sudo make install \
+&& popd \
+&& popd \
+&& pip install onnx==${ONNXVER} \
+&& pip install pycuda==${PYCUDAVER} \
+&& pushd ../onnx-tensorrt \
+&& python setup.py install --user \
+&& popd \
+&& echo 'export CUDA_MODULE_LOADING=LAZY' >> ~/.bashrc \
+&& echo 'export PATH=${PATH}:/usr/src/tensorrt/bin:${HOME}/onnx-tensorrt/build' >> ~/.bashrc
+```
+
+## 8. Build onnxruntime-gpu for TensorRT
+```bash
+# Get the latest release version
+git clone https://github.com/microsoft/onnxruntime.git \
+&& cd onnxruntime \
+&& TAG=`git describe --tags --abbrev=0` \
+&& git checkout ${TAG}
+
+# Check the version of TensorRT installed on the host PC
+dpkg -l | grep TensorRT
+
+ii  graphsurgeon-tf        8.5.3-1+cuda11.8   amd64 GraphSurgeon for TensorRT package
+ii  libnvinfer-bin         8.5.3-1+cuda11.8   amd64 TensorRT binaries
+ii  libnvinfer-dev         8.5.3-1+cuda11.8   amd64 TensorRT development libraries and headers
+ii  libnvinfer-plugin-dev  8.5.3-1+cuda11.8   amd64 TensorRT plugin libraries
+ii  libnvinfer-plugin8     8.5.3-1+cuda11.8   amd64 TensorRT plugin libraries
+ii  libnvinfer-samples     8.5.3-1+cuda11.8   all   TensorRT samples
+ii  libnvinfer8            8.5.3-1+cuda11.8   amd64 TensorRT runtime libraries
+ii  libnvonnxparsers-dev   8.5.3-1+cuda11.8   amd64 TensorRT ONNX libraries
+ii  libnvonnxparsers8      8.5.3-1+cuda11.8   amd64 TensorRT ONNX libraries
+ii  libnvparsers-dev       8.5.3-1+cuda11.8   amd64 TensorRT parsers libraries
+ii  libnvparsers8          8.5.3-1+cuda11.8   amd64 TensorRT parsers libraries
+ii  onnx-graphsurgeon      8.5.3-1+cuda11.8   amd64 ONNX GraphSurgeon for TensorRT package
+ii  python3-libnvinfer     8.5.3-1+cuda11.8   amd64 Python 3 bindings for TensorRT
+ii  python3-libnvinfer-dev 8.5.3-1+cuda11.8   amd64 Python 3 development package for TensorRT
+ii  tensorrt               8.5.3.1-1+cuda11.8 amd64 Meta package for TensorRT
+ii  tensorrt-dev           8.5.3.1-1+cuda11.8 amd64 Meta package for TensorRT development libraries
+ii  tensorrt-libs          8.5.3.1-1+cuda11.8 amd64 Meta package for TensorRT runtime libraries
+ii  uff-converter-tf       8.5.3-1+cuda11.8   amd64 UFF converter for TensorRT package
+
+# Grant execution rights to scripts and install cmake
+sudo chmod +x build.sh
+pip install cmake --upgrade
+
+# Build
+./build.sh \
+--config Release \
+--cudnn_home /usr/lib/x86_64-linux-gnu/ \
+--cuda_home /usr/local/cuda \
+--use_tensorrt \
+--use_cuda \
+--tensorrt_home /usr/src/tensorrt/ \
+--enable_pybind \
+--build_wheel \
+--parallel $(nproc) \
+--compile_no_warning_as_error \
+--skip_tests
+
+# Check the path of the generated installer
+find . -name "*.whl"
+
+./build/Linux/Release/dist/onnxruntime_gpu-1.15.1-cp310-cp310-linux_x86_64.whl
+```
+
+## 9. Reference
 1. https://github.com/onnx/onnx/blob/main/docs/Operators.md
 2. https://docs.nvidia.com/deeplearning/tensorrt/onnx-graphsurgeon/docs/index.html
 3. https://github.com/NVIDIA/TensorRT/tree/main/tools/onnx-graphsurgeon
 4. https://github.com/PINTO0309/simple-onnx-processing-tools
 5. https://github.com/PINTO0309/PINTO_model_zoo
 
-## 8. Issues
+## 10. Issues
 https://github.com/PINTO0309/simple-onnx-processing-tools/issues
