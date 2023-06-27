@@ -324,7 +324,7 @@ cd ${HOME} \
 git clone https://github.com/microsoft/onnxruntime.git \
 && cd onnxruntime \
 && TAG=`git describe --tags --abbrev=0` \
-&& git checkout ${TAG}
+&& git checkout -b main ${TAG}
 
 # Check the version of TensorRT installed on the host PC
 dpkg -l | grep TensorRT
