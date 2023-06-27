@@ -321,10 +321,8 @@ cd ${HOME} \
 ## 8. Build onnxruntime-gpu for TensorRT
 ```bash
 # Get the latest release version
-git clone https://github.com/microsoft/onnxruntime.git \
-&& cd onnxruntime \
-&& TAG=`git describe --tags --abbrev=0` \
-&& git checkout -b main ${TAG}
+git clone -b v1.15.1 https://github.com/microsoft/onnxruntime.git \
+&& cd onnxruntime
 
 # Check the version of TensorRT installed on the host PC
 dpkg -l | grep TensorRT
