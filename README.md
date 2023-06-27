@@ -295,8 +295,7 @@ sudo dpkg -i nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}_1.0-1_a
 && rm nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}_1.0-1_amd64.deb \
 && cd /usr/src/tensorrt/samples/trtexec \
 && sudo make \
-&& sudo apt clean \
-&& sudo rm -rf /var/lib/apt/lists/*
+&& sudo apt clean
 
 # Install onnx-tensorrt
 git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt ../onnx-tensorrt \
@@ -314,7 +313,8 @@ git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt ..
 && python setup.py install --user \
 && popd \
 && echo 'export CUDA_MODULE_LOADING=LAZY' >> ~/.bashrc \
-&& echo 'export PATH=${PATH}:/usr/src/tensorrt/bin:${HOME}/onnx-tensorrt/build' >> ~/.bashrc
+&& echo 'export PATH=${PATH}:/usr/src/tensorrt/bin:${HOME}/onnx-tensorrt/build' >> ~/.bashrc \
+&& source ~/.bashrc
 ```
 
 ## 8. Build onnxruntime-gpu for TensorRT
