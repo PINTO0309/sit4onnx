@@ -368,6 +368,10 @@ pip install cmake --upgrade
 find . -name "*.whl"
 
 ./build/Linux/Release/dist/onnxruntime_gpu-1.15.1-cp310-cp310-linux_x86_64.whl
+
+# Install
+pip uninstall onnxruntime onnxruntime-gpu
+pip install ./build/Linux/Release/dist/onnxruntime_gpu-1.15.1-cp310-cp310-linux_x86_64.whl
 ```
 
 ## 9. Reference
