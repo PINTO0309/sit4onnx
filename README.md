@@ -298,8 +298,9 @@ sudo dpkg -i nv-tensorrt-local-repo-${OS}-${TENSORRTVER}-cuda-${CUDAVER}_1.0-1_a
 && sudo apt clean
 
 # Install onnx-tensorrt
-git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt ../onnx-tensorrt \
-&& pushd ../onnx-tensorrt \
+cd ${HOME} \
+&& git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt onnx-tensorrt \
+&& pushd onnx-tensorrt \
 && mkdir build \
 && pushd build \
 && cmake .. -DTENSORRT_ROOT=/usr/src/tensorrt \
@@ -309,7 +310,7 @@ git clone -b release/8.5-GA --recursive https://github.com/onnx/onnx-tensorrt ..
 && popd \
 && pip install onnx==${ONNXVER} \
 && pip install pycuda==${PYCUDAVER} \
-&& pushd ../onnx-tensorrt \
+&& pushd onnx-tensorrt \
 && python setup.py install --user \
 && popd \
 && echo 'export CUDA_MODULE_LOADING=LAZY' >> ~/.bashrc \
