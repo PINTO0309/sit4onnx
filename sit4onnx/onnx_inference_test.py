@@ -90,6 +90,7 @@ def inference(
     test_loop_count: Optional[int] = 10,
     onnx_execution_provider: Optional[str] = 'tensorrt',
     intra_op_num_threads: Optional[int] = 0,
+    enable_profiling: Optional[bool] = False,
     input_numpy_file_paths_for_testing: Optional[List[str]] = None,
     numpy_ndarrays_for_testing: Optional[List[np.ndarray]] = None,
     output_numpy_file: Optional[bool] = False,
@@ -135,6 +136,10 @@ def inference(
     intra_op_num_threads: Optional[int]
         Sets the number of threads used to parallelize the execution within nodes.\n\
         Default is 0 to let onnxruntime choose.
+
+    enable_profiling: Optional[bool]
+        Outputs performance profiling result to a .json file
+        Default: False
 
     input_numpy_file_paths_for_testing: Optional[List[str]]
         Use an external file of numpy.ndarray saved using np.save as input data for testing.\n\
@@ -232,6 +237,7 @@ def inference(
     session_option = onnxruntime.SessionOptions()
     session_option.log_severity_level = 4
     session_option.intra_op_num_threads = intra_op_num_threads
+    session_option.enable_profiling = enable_profiling
 
     if sub_info:
         if onnx_execution_provider in ['openvino_cpu', 'openvino_gpu']:
@@ -466,6 +472,12 @@ def main():
         help='Sets the number of threads used to parallelize the execution within nodes.'
     )
     parser.add_argument(
+        '-pro',
+        '--enable_profiling',
+        action='store_true',
+        help='Outputs performance profiling result to a .json file'
+    )
+    parser.add_argument(
         '-ifp',
         '--input_numpy_file_paths_for_testing',
         type=str,
@@ -499,6 +511,7 @@ def main():
     test_loop_count = args.test_loop_count
     onnx_execution_provider = args.onnx_execution_provider
     intra_op_num_threads = args.intra_op_num_threads
+    enable_profiling = args.enable_profiling
     input_numpy_file_paths_for_testing = args.input_numpy_file_paths_for_testing
     output_numpy_file = args.output_numpy_file
     non_verbose = args.non_verbose
@@ -510,6 +523,7 @@ def main():
         test_loop_count=test_loop_count,
         onnx_execution_provider=onnx_execution_provider,
         intra_op_num_threads=intra_op_num_threads,
+        enable_profiling=enable_profiling,
         input_numpy_file_paths_for_testing=input_numpy_file_paths_for_testing,
         numpy_ndarrays_for_testing=None,
         output_numpy_file=output_numpy_file,

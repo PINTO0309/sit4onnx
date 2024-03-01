@@ -44,6 +44,7 @@ usage:
   [-fs DIM0 [DIM1 DIM2 ...]]
   [-tlc TEST_LOOP_COUNT]
   [-oep {tensorrt,cuda,openvino_cpu,openvino_gpu,cpu}]
+  [-pro]
   [-iont INTRA_OP_NUM_THREADS]
   [-ifp INPUT_NUMPY_FILE_PATHS_FOR_TESTING]
   [-ofp]
@@ -84,6 +85,9 @@ optional arguments:
       Sets the number of threads used to parallelize the execution within nodes.
       Default is 0 to let onnxruntime choose.
 
+  -pro, --enable_profiling
+      Outputs performance profiling result to a .json file
+
   -ifp, --input_numpy_file_paths_for_testing INPUT_NUMPY_FILE_PATHS_FOR_TESTING
       Use an external file of numpy.ndarray saved using np.save as input data for testing.
       This parameter can be specified multiple times depending on the number of input OPs
@@ -116,6 +120,7 @@ inference(
   test_loop_count: Union[int, NoneType] = 10,
   onnx_execution_provider: Union[str, NoneType] = 'tensorrt',
   intra_op_num_threads: Optional[int] = 0,
+  enable_profiling: Optional[bool] = False,
   input_numpy_file_paths_for_testing: Union[List[str], NoneType] = None,
   numpy_ndarrays_for_testing: Union[List[numpy.ndarray], NoneType] = None,
   output_numpy_file: Union[bool, NoneType] = False,
@@ -162,6 +167,10 @@ inference(
     intra_op_num_threads: Optional[int]
         Sets the number of threads used to parallelize the execution within nodes.
         Default is 0 to let onnxruntime choose.
+
+    enable_profiling: Optional[bool]
+        Outputs performance profiling result to a .json file
+        Default: False
 
     input_numpy_file_paths_for_testing: Optional[List[str]]
         Use an external file of numpy.ndarray saved using np.save as input data for testing.
