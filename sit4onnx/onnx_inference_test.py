@@ -56,6 +56,11 @@ ONNX_EXECUTION_PROVIDERS: dict = {
                 'trt_engine_cache_enable': True,
                 'trt_engine_cache_path': '',
                 'trt_fp16_enable': True,
+                # onnxruntime>=1.21.0 breaking changes
+                # https://onnxruntime.ai/docs/execution-providers/TensorRT-ExecutionProvider.html#data-dependant-shape-dds-ops
+                # https://github.com/microsoft/onnxruntime/pull/22681/files
+                # https://github.com/microsoft/onnxruntime/pull/23893/files
+                'trt_op_types_to_exclude': 'NonMaxSuppression,NonZero,RoiAlign"',
             }
         ),
         'sub_info': {},
