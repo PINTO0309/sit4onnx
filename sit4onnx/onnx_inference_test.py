@@ -191,7 +191,7 @@ def inference(
             f'{Color.RED}ERROR:{Color.RESET} '+
             f'The specified file (.onnx) does not exist. or not an onnx file. File: {input_onnx_file_path}'
         )
-        sys.exit(1)
+        sys.exit(0)
 
     # test_loop_count check
     if test_loop_count and test_loop_count <= 0:
@@ -199,7 +199,7 @@ def inference(
             f'{Color.RED}ERROR:{Color.RESET} '+
             f'test_loop_count must be 1 or greater.'
         )
-        sys.exit(1)
+        sys.exit(0)
 
     # Test Data Check
     if input_numpy_file_paths_for_testing and numpy_ndarrays_for_testing:
@@ -207,7 +207,7 @@ def inference(
             f'{Color.RED}ERROR:{Color.RESET} '+
             f'Only one of input_numpy_file_path_for_testing and numpy_ndarray_for_testing can be specified.'
         )
-        sys.exit(1)
+        sys.exit(0)
 
     # file existence check
     if input_numpy_file_paths_for_testing:
@@ -218,7 +218,7 @@ def inference(
                         f'{Color.RED}ERROR:{Color.RESET} '+
                         f'The specified input_numpy_file_path_for_testing does not exist. File: {input_numpy_file_path_for_testing}'
                     )
-                    sys.exit(1)
+                    sys.exit(0)
 
     # Test data load
     if input_numpy_file_paths_for_testing:
@@ -281,7 +281,7 @@ def inference(
                 f'Number of model input OPs: {len(ort_input_names)}\n'+
                 f'Number of test data inputs: {len(fixed_shapes)}'
             )
-            sys.exit(1)
+            sys.exit(0)
         for fixed_shape in fixed_shapes:
             ort_input_shapes.append(fixed_shape)
 
@@ -296,7 +296,7 @@ def inference(
                             f'{Color.RED}ERROR:{Color.RESET} '+
                             f'batch_size must be 1 or greater.'
                         )
-                        sys.exit(1)
+                        sys.exit(0)
                     input_shape.append(batch_size)
                 else:
                     input_shape.append(shape)
@@ -308,6 +308,13 @@ def inference(
 
     input_dict = None
     if not numpy_ndarrays_for_testing and not fixed_shapes:
+        if any(isinstance(item, str) for sublist in ort_input_shapes for item in sublist):
+            print(
+                f'{Color.RED}ERROR:{Color.RESET} '+
+                f'For models with dynamic tensors as input, specify the size of the tensor to be tested using the --fixed_shapes option.\n'+
+                f'Model input shapes: {ort_input_shapes}'
+            )
+            sys.exit(0)
         input_dict = {
             ort_input_name: np.ones(
                 ort_input_shape,
@@ -332,7 +339,7 @@ def inference(
                 f'Number of model input OPs: {len(ort_input_names)}\n'+
                 f'Number of test data inputs: {len(numpy_ndarrays_for_testing)}'
             )
-            sys.exit(1)
+            sys.exit(0)
         input_dict = {
             ort_input_name: numpy_ndarray_for_testing \
                 for ort_input_name, numpy_ndarray_for_testing in zip(ort_input_names, numpy_ndarrays_for_testing)
